@@ -19,3 +19,8 @@ Thumbs.db
 # Log files
 *.log
 npm-debug.log*
+node_modules/
+dist/
+node_modules/
+dist/
+*/dist/
