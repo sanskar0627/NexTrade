@@ -37,4 +37,8 @@ export class RedisManager {
         return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     }
 
+    public async publishMessage(channel: string, message: any) {
+        await this.publisher.publish(channel, JSON.stringify(message));
+    }
+
 }

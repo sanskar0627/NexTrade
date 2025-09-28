@@ -1,15 +1,14 @@
-import express from 'express';
-import { RedisManager } from '../RedisManager.js';
-import { authenticateToken, AuthenticatedRequest } from '../middleware/auth.js';
+import express, { Response } from 'express';
+import { RedisManager } from '../RedisManager';
+import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
-import { CREATE_ORDER } from '../types/to.js';
 
 const router = express.Router();
-const redisManager = new RedisManager();
+const redisManager = RedisManager.getInstance();
 const prisma = new PrismaClient();
 
 // Create order
-router.post('/create', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.post('/create', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { market, side, quantity, price, type = 'LIMIT' } = req.body;
     const userId = req.userId!;
@@ -93,7 +92,7 @@ router.post('/create', authenticateToken, async (req: AuthenticatedRequest, res)
 });
 
 // Cancel order
-router.delete('/:orderId', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.delete('/:orderId', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { orderId } = req.params;
     const userId = req.userId!;
@@ -148,7 +147,7 @@ router.delete('/:orderId', authenticateToken, async (req: AuthenticatedRequest, 
 });
 
 // Get user orders
-router.get('/history', authenticateToken, async (req: AuthenticatedRequest, res) => {
+router.get('/history', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const { market, limit = 50 } = req.query;
