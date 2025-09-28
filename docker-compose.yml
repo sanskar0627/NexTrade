@@ -1,0 +1,106 @@
+version: '3.8'
+
+services:
+  # Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: nextrade-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: nextrade-postgres
+    environment:
+      POSTGRES_DB: nextrade
+      POSTGRES_USER: nextrade_user
+      POSTGRES_PASSWORD: nextrade_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextrade_user -d nextrade"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Next.js application
+  nextrade-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nextrade-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://nextrade_user:nextrade_password@postgres:5432/nextrade
+      - REDIS_URL=redis://redis:6379
+      - NEXTAUTH_SECRET=your-super-secure-secret-key-for-production
+      - NEXTAUTH_URL=http://localhost:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # WebSocket service (for real-time trading)
+  nextrade-ws:
+    build:
+      context: ./ws
+      dockerfile: Dockerfile
+    container_name: nextrade-ws
+    ports:
+      - "8080:8080"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nextrade_user:nextrade_password@postgres:5432/nextrade
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Trading Engine (separate service)
+  nextrade-engine:
+    build:
+      context: ./engine
+      dockerfile: Dockerfile
+    container_name: nextrade-engine
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - DATABASE_URL=postgresql://nextrade_user:nextrade_password@postgres:5432/nextrade
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: nextrade-network
