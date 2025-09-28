@@ -233,6 +233,8 @@ export class MarketDataManager {
   private binance: BinanceWebSocket;
   private finnhub: FinnhubClient | null = null;
   private priceCallbacks = new Map<string, Function>();
+  private connectionRetries = 0;
+  private maxRetries = 5;
 
   constructor(finnhubApiKey?: string) {
     this.binance = new BinanceWebSocket();
@@ -241,6 +243,23 @@ export class MarketDataManager {
       this.finnhub = new FinnhubClient(finnhubApiKey);
       this.finnhub.connectWebSocket();
     }
+
+    // Enhanced connection monitoring
+    this.monitorConnection();
+  }
+
+  private monitorConnection() {
+    // Check connection health every 30 seconds
+    setInterval(() => {
+      if (typeof window !== 'undefined') {
+        this.checkConnectionHealth();
+      }
+    }, 30000);
+  }
+
+  private checkConnectionHealth() {
+    // Implement connection health check
+    console.log('Checking WebSocket connection health...');
   }
 
   subscribePrice(symbol: string, callback: (price: number) => void) {

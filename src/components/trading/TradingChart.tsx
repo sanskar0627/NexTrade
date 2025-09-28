@@ -166,22 +166,28 @@ export default function TradingChart({ symbol, height = 400 }: TradingChartProps
     const interval = getInterval(timeframe);
     const limit = getLimit(timeframe);
     
-    const response = await fetch(
-      `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`
-    );
-    
-    if (!response.ok) throw new Error('Failed to fetch Binance data');
-    
-    const data = await response.json();
-    
-    return data.map((kline: any[]) => ({
-      time: Math.floor(kline[0] / 1000), // Convert to seconds
-      open: parseFloat(kline[1]),
-      high: parseFloat(kline[2]),
-      low: parseFloat(kline[3]),
-      close: parseFloat(kline[4]),
-      volume: parseFloat(kline[5]),
-    }));
+    try {
+      // Use our enhanced API route with better rate limits
+      const response = await fetch(
+        `/api/binance?symbol=${symbol}&type=klines&interval=${interval}&limit=${limit}`
+      );
+      
+      if (!response.ok) throw new Error('Failed to fetch Binance data');
+      
+      const data = await response.json();
+      
+      return data.map((kline: any[]) => ({
+        time: Math.floor(kline[0] / 1000), // Convert to seconds
+        open: parseFloat(kline[1]),
+        high: parseFloat(kline[2]),
+        low: parseFloat(kline[3]),
+        close: parseFloat(kline[4]),
+        volume: parseFloat(kline[5]),
+      }));
+    } catch (error) {
+      console.log('Enhanced Binance API error, using fallback data');
+      throw error;
+    }
   };
 
   const fetchStockKlines = async (symbol: string): Promise<CandleData[]> => {

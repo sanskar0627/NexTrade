@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { AssetLogo } from '@/components/ui/AssetLogo';
+import MarketOverview from '@/components/MarketOverview';
 import Link from 'next/link';
 import { 
   Wallet, 
@@ -175,7 +176,10 @@ export default async function DashboardPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-8">
+          {/* Real-time Market Overview */}
+          <MarketOverview />
+
           {/* Top Gainers */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">

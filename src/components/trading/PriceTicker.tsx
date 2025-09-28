@@ -48,7 +48,8 @@ const PriceTicker = memo(function PriceTicker({ symbol, initialPrice = 0 }: Pric
 
     const fetchBinanceTicker = async () => {
       try {
-        const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${symbol}`);
+        // Use our enhanced API route for better reliability
+        const response = await fetch(`/api/binance?symbol=${symbol}&type=ticker`);
         if (response.ok) {
           const data = await response.json();
           const newPriceData = {
@@ -66,7 +67,7 @@ const PriceTicker = memo(function PriceTicker({ symbol, initialPrice = 0 }: Pric
           return;
         }
       } catch (error) {
-        console.log('Binance API not available, using mock data');
+        console.log('Enhanced Binance API not available, using mock data');
       }
       
       // Fallback to realistic mock data

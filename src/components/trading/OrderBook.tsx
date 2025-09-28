@@ -36,7 +36,8 @@ export default function OrderBook({ symbol }: OrderBookProps) {
 
     const fetchBinanceOrderBook = async () => {
       try {
-        const response = await fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=20`);
+        // Use our enhanced API route for better reliability
+        const response = await fetch(`/api/binance?symbol=${symbol}&type=orderbook&limit=20`);
         if (response.ok) {
           const data = await response.json();
           
@@ -58,7 +59,7 @@ export default function OrderBook({ symbol }: OrderBookProps) {
           return;
         }
       } catch (error) {
-        console.log('Binance API not available, using mock data');
+        console.log('Enhanced Binance API not available, using mock data');
       }
       
       // Fallback to mock data
