@@ -1,54 +1,93 @@
 @echo off
+title NexTrade Setup
+color 0A
 echo ====================================
-echo   NexTrade Demo Setup Script
+echo   NexTrade Demo Setup Script v2.0
 echo ====================================
 echo.
 
-echo Step 1: Starting PostgreSQL and Redis...
+echo [1/6] Starting PostgreSQL and Redis...
 cd docker
 docker-compose up -d
-echo Waiting for services to start...
-timeout /t 10 /nobreak > nul
+if errorlevel 1 (
+    echo ERROR: Failed to start Docker services. Please ensure Docker is running.
+    pause
+    exit /b 1
+)
+echo Waiting for services to initialize...
+timeout /t 15 /nobreak > nul
 
 echo.
-echo Step 2: Installing API dependencies...
+echo [2/6] Installing API dependencies...
 cd ..\api
-npm install
+call npm install
+if errorlevel 1 (
+    echo ERROR: Failed to install API dependencies
+    pause
+    exit /b 1
+)
 
 echo.
-echo Step 3: Installing DB dependencies...
+echo [3/6] Installing DB dependencies...
 cd ..\db
-npm install
+call npm install
+if errorlevel 1 (
+    echo ERROR: Failed to install DB dependencies
+    pause
+    exit /b 1
+)
 
 echo.
-echo Step 4: Installing Frontend dependencies...
+echo [4/6] Installing Frontend dependencies...
 cd ..\frontend
-npm install
+call npm install
+if errorlevel 1 (
+    echo ERROR: Failed to install Frontend dependencies
+    pause
+    exit /b 1
+)
 
 echo.
-echo Step 5: Setting up database...
+echo [5/6] Setting up database and seeding demo data...
 cd ..\db
-npx prisma generate
-npx prisma db push
-npm run db:seed
+call npm run setup
+if errorlevel 1 (
+    echo ERROR: Database setup failed
+    pause
+    exit /b 1
+)
+
+echo.
+echo [6/6] Final verification...
+timeout /t 2 /nobreak > nul
 
 echo.
 echo ====================================
-echo   Setup Complete!
+echo   🚀 SETUP COMPLETE! 
 echo ====================================
 echo.
-echo To start the demo platform:
+echo 📋 QUICK START GUIDE:
 echo.
-echo 1. Start API server:
-echo    cd api && npm run dev
+echo 1. Start API Server (Terminal 1):
+echo    cd api ^&^& npm run dev
 echo.
-echo 2. Start Frontend (in new terminal):
-echo    cd frontend && npm run dev
+echo 2. Start Frontend (Terminal 2):
+echo    cd frontend ^&^& npm run dev
 echo.
-echo 3. Open browser to: http://localhost:3000
+echo 3. Open Browser:
+echo    http://localhost:3000
 echo.
-echo Demo login: demo@nextrade.com / demo123
-echo Or create a new account with $5000 demo balance!
+echo 🎮 DEMO CREDENTIALS:
+echo    Email: demo@nextrade.com
+echo    Password: demo123
+echo    Starting Balance: $5000 USDC
 echo.
-echo Press any key to exit...
+echo 🎯 FEATURES TO TRY:
+echo    ✅ Live trading with real balance updates
+echo    ✅ Auto-generated demo trades every 2-5 seconds
+echo    ✅ Real-time order book and trade history
+echo    ✅ Order placement and cancellation
+echo    ✅ Portfolio tracking in top bar
+echo.
+echo Press any key to exit setup...
 pause > nul
