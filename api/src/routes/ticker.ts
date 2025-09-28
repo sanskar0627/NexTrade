@@ -1,8 +1,7 @@
 
 import { Router } from "express";
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
 export const tickersRouter = Router();
 
 tickersRouter.get("/", async (req, res) => {

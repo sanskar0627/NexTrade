@@ -1,7 +1,6 @@
 import { Router } from "express";
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
-const prisma = new PrismaClient();
 export const tradesRouter = Router();
 
 tradesRouter.get("/", async (req, res) => {

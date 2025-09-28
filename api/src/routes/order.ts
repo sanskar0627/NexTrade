@@ -1,11 +1,10 @@
 import express, { Response } from 'express';
 import { RedisManager } from '../RedisManager';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 
 const router = express.Router();
 const redisManager = RedisManager.getInstance();
-const prisma = new PrismaClient();
 
 // Create order
 router.post('/create', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
