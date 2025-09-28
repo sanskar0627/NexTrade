@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { formatCurrency, toNumber, formatPercent } from '@/lib/format-currency';
 
 interface PortfolioData {
   account: {
@@ -197,14 +198,14 @@ export default function PortfolioPage() {
                               </div>
                             </td>
                             <td className="py-4 text-right">{position.qty}</td>
-                            <td className="py-4 text-right">${position.avgPrice.toFixed(2)}</td>
-                            <td className="py-4 text-right">${position.currentPrice.toFixed(2)}</td>
-                            <td className="py-4 text-right">${position.marketValue.toFixed(2)}</td>
-                            <td className={`py-4 text-right ${position.pnl >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              ${position.pnl.toFixed(2)}
+                            <td className="py-4 text-right">{formatCurrency(position.avgPrice)}</td>
+                            <td className="py-4 text-right">{formatCurrency(position.currentPrice)}</td>
+                            <td className="py-4 text-right">{formatCurrency(position.marketValue)}</td>
+                            <td className={`py-4 text-right ${toNumber(position.pnl) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatCurrency(position.pnl)}
                             </td>
-                            <td className={`py-4 text-right ${position.pnlPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {position.pnlPercent >= 0 ? '+' : ''}{position.pnlPercent.toFixed(2)}%
+                            <td className={`py-4 text-right ${toNumber(position.pnlPercent) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {formatPercent(position.pnlPercent)}
                             </td>
                             <td className="py-4 text-right">
                               <Link
