@@ -2,7 +2,7 @@ import axios from "axios";
 import { Depth, KLine, Ticker, Trade } from "./types";
 import { getToken } from "./auth";
 
-const BASE_URL = "http://localhost:3001/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3001/api/v1";
 
 // Create axios instance with auth interceptor
 const apiClient = axios.create({
