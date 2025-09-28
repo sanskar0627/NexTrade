@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'NexTrade - Demo Trading Platform',
@@ -14,7 +15,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased bg-background text-foreground">
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
