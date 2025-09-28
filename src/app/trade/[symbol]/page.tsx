@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
+import PriceTicker from '@/components/trading/PriceTicker';
+import OrderForm from '@/components/trading/OrderForm';
+import OrderBook from '@/components/trading/OrderBook';
 
 interface TradePageProps {
   params: { symbol: string };
@@ -71,24 +74,29 @@ export default async function TradePage({ params }: TradePageProps) {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Price Ticker */}
+        <PriceTicker symbol={asset.symbol} />
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
           {/* Chart Area - Takes most space */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-lg font-semibold text-gray-900">Price Chart</h2>
-                <div className="text-2xl font-bold text-gray-900">
-                  $---.-- <span className="text-sm text-gray-500">USD</span>
+                <div className="flex space-x-2 text-sm">
+                  <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded">1D</button>
+                  <button className="px-3 py-1 text-gray-500 hover:bg-gray-100 rounded">7D</button>
+                  <button className="px-3 py-1 text-gray-500 hover:bg-gray-100 rounded">30D</button>
                 </div>
               </div>
               
-              {/* Placeholder for chart */}
+              {/* Placeholder for TradingView chart */}
               <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
                 <div className="text-center">
                   <div className="text-4xl mb-4">📈</div>
-                  <p className="text-gray-600">Chart loading...</p>
+                  <p className="text-gray-600">TradingView Chart</p>
                   <p className="text-sm text-gray-500 mt-2">
-                    Live price data will appear here
+                    Live candlestick chart will appear here
                   </p>
                 </div>
               </div>
@@ -98,75 +106,12 @@ export default async function TradePage({ params }: TradePageProps) {
           {/* Trading Panel */}
           <div className="lg:col-span-1 space-y-6">
             {/* Order Form */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Place Order</h3>
-              
-              <div className="space-y-4">
-                {/* Buy/Sell Toggle */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button className="bg-green-500 text-white py-2 px-4 rounded-md font-medium">
-                    BUY
-                  </button>
-                  <button className="bg-gray-200 text-gray-700 py-2 px-4 rounded-md font-medium">
-                    SELL
-                  </button>
-                </div>
-
-                {/* Order Type */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Order Type
-                  </label>
-                  <select className="w-full border border-gray-300 rounded-md px-3 py-2">
-                    <option>Market</option>
-                    <option>Limit</option>
-                  </select>
-                </div>
-
-                {/* Quantity */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity
-                  </label>
-                  <input
-                    type="number"
-                    step="0.00000001"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="0.00"
-                  />
-                </div>
-
-                {/* Limit Price (conditionally shown) */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Limit Price
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    className="w-full border border-gray-300 rounded-md px-3 py-2"
-                    placeholder="0.00"
-                    disabled
-                  />
-                </div>
-
-                {/* Total */}
-                <div className="bg-gray-50 p-3 rounded-md">
-                  <div className="flex justify-between text-sm">
-                    <span>Estimated Total:</span>
-                    <span className="font-medium">$0.00</span>
-                  </div>
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  className="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-md font-medium transition-colors"
-                  disabled
-                >
-                  Place Buy Order
-                </button>
-              </div>
-            </div>
+            <OrderForm
+              symbol={asset.symbol}
+              assetId={asset.id}
+              currentPrice={43500} // This would come from real market data
+              balance={parseFloat(account?.balance.toString() || '0')}
+            />
 
             {/* Position Info */}
             {position && (
@@ -188,14 +133,11 @@ export default async function TradePage({ params }: TradePageProps) {
                 </div>
               </div>
             )}
+          </div>
 
-            {/* Order Book Preview */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Book</h3>
-              <div className="space-y-2">
-                <div className="text-sm text-gray-500 text-center">Loading order book...</div>
-              </div>
-            </div>
+          {/* Order Book */}
+          <div className="lg:col-span-1">
+            <OrderBook symbol={asset.symbol} />
           </div>
         </div>
       </div>

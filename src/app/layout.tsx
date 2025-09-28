@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Providers } from '@/components/providers';
+import Navigation from '@/components/Navigation';
 
 export const metadata: Metadata = {
   title: 'NexTrade - Demo Trading Platform',
@@ -16,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased bg-background text-foreground">
         <Providers>
+          <Navigation />
           {children}
         </Providers>
       </body>
