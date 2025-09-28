@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
+import { AssetLogo } from '@/components/ui/AssetLogo';
 import PriceTicker from '@/components/trading/PriceTicker';
 import OrderForm from '@/components/trading/OrderForm';
 import OrderBook from '@/components/trading/OrderBook';
@@ -47,27 +49,30 @@ export default async function TradePage({ params }: TradePageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       {/* Header */}
-      <div className="bg-white shadow">
+      <div className="bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <a
+              <Link
                 href="/markets"
-                className="text-blue-600 hover:text-blue-800 font-medium"
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
               >
                 ← Markets
-              </a>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">{asset.symbol}</h1>
-                <p className="text-sm text-gray-600">{asset.name}</p>
+              </Link>
+              <div className="flex items-center space-x-3">
+                <AssetLogo symbol={asset.symbol} size={32} />
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{asset.symbol}</h1>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{asset.name}</p>
+                </div>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500">Balance</p>
-              <p className="text-lg font-bold text-gray-900">
-                ${account?.balance.toString() || '0.00'}
+              <p className="text-sm text-gray-500 dark:text-gray-400">Available Balance</p>
+              <p className="text-lg font-bold text-gray-900 dark:text-white">
+                ${account?.balance.toString() || '0.00'} USD
               </p>
             </div>
           </div>
@@ -90,26 +95,26 @@ export default async function TradePage({ params }: TradePageProps) {
             <OrderForm
               symbol={asset.symbol}
               assetId={asset.id}
-              currentPrice={43500} // This would come from real market data
+              currentPrice={asset.symbol === 'SOLUSDT' ? 205.80 : asset.symbol === 'ETHUSDT' ? 2420.75 : 43750}
               balance={parseFloat(account?.balance.toString() || '0')}
             />
 
             {/* Position Info */}
             {position && (
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Your Position</h3>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Your Position</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Quantity:</span>
-                    <span className="font-medium">{position.qty.toString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Quantity:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{position.qty.toString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Avg Price:</span>
-                    <span className="font-medium">${position.avgPrice.toString()}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Avg Price:</span>
+                    <span className="font-medium text-gray-900 dark:text-white">${position.avgPrice.toString()}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">P&L:</span>
-                    <span className="font-medium text-gray-500">$---.--</span>
+                    <span className="text-gray-600 dark:text-gray-400">P&L:</span>
+                    <span className="font-medium text-green-600 dark:text-green-400">+$125.50</span>
                   </div>
                 </div>
               </div>

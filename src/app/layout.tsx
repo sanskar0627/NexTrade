@@ -14,11 +14,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="antialiased bg-background text-foreground">
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors">
         <Providers>
           <Navigation />
-          {children}
+          <main>{children}</main>
         </Providers>
       </body>
     </html>

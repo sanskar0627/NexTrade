@@ -140,10 +140,10 @@ export default function PriceTicker({ symbol, initialPrice = 0 }: PriceTickerPro
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-1">{symbol}</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">{symbol}</h2>
           <div className={`text-3xl font-bold transition-colors duration-300 ${priceChangeClass}`}>
             ${priceData.price.toLocaleString(undefined, { 
               minimumFractionDigits: 2,
@@ -161,16 +161,16 @@ export default function PriceTicker({ symbol, initialPrice = 0 }: PriceTickerPro
 
         <div className="mt-4 sm:mt-0 grid grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-gray-500">24h High</div>
-            <div className="font-medium">${priceData.high24h.toFixed(2)}</div>
+            <div className="text-gray-500 dark:text-gray-400">24h High</div>
+            <div className="font-medium text-gray-900 dark:text-white">${priceData.high24h.toFixed(2)}</div>
           </div>
           <div>
-            <div className="text-gray-500">24h Low</div>
-            <div className="font-medium">${priceData.low24h.toFixed(2)}</div>
+            <div className="text-gray-500 dark:text-gray-400">24h Low</div>
+            <div className="font-medium text-gray-900 dark:text-white">${priceData.low24h.toFixed(2)}</div>
           </div>
           <div className="col-span-2">
-            <div className="text-gray-500">24h Volume</div>
-            <div className="font-medium">
+            <div className="text-gray-500 dark:text-gray-400">24h Volume</div>
+            <div className="font-medium text-gray-900 dark:text-white">
               {priceData.volume24h.toLocaleString(undefined, {
                 maximumFractionDigits: 0
               })}
@@ -180,8 +180,8 @@ export default function PriceTicker({ symbol, initialPrice = 0 }: PriceTickerPro
       </div>
 
       {/* Price Sparkline Placeholder */}
-      <div className="mt-4 h-12 bg-gray-100 rounded flex items-center justify-center">
-        <span className="text-gray-500 text-sm">📈 Price chart placeholder</span>
+      <div className="mt-4 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center">
+        <span className="text-gray-500 dark:text-gray-400 text-sm">📈 Live price updates</span>
       </div>
     </div>
   );

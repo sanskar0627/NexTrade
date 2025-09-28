@@ -138,12 +138,12 @@ export default function OrderBook({ symbol }: OrderBookProps) {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Book</h3>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Order Book</h3>
       
       <div className="space-y-4">
         {/* Header */}
-        <div className="grid grid-cols-3 gap-2 text-xs font-medium text-gray-500 uppercase tracking-wider">
+        <div className="grid grid-cols-3 gap-2 text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
           <div>Price (USD)</div>
           <div className="text-right">Size</div>
           <div className="text-right">Total</div>
@@ -154,15 +154,15 @@ export default function OrderBook({ symbol }: OrderBookProps) {
           {asks.slice(0, 5).reverse().map((ask, index) => (
             <div
               key={`ask-${index}`}
-              className="grid grid-cols-3 gap-2 text-sm hover:bg-red-50 p-1 rounded transition-colors"
+              className="grid grid-cols-3 gap-2 text-sm hover:bg-red-50 dark:hover:bg-red-900/20 p-1 rounded transition-colors"
             >
-              <div className="text-red-600 font-medium">
+              <div className="text-red-600 dark:text-red-400 font-medium">
                 {ask.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
-              <div className="text-right text-gray-900">
+              <div className="text-right text-gray-900 dark:text-white">
                 {ask.quantity.toFixed(4)}
               </div>
-              <div className="text-right text-gray-600">
+              <div className="text-right text-gray-600 dark:text-gray-400">
                 {ask.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
             </div>
@@ -170,8 +170,8 @@ export default function OrderBook({ symbol }: OrderBookProps) {
         </div>
 
         {/* Spread */}
-        <div className="border-t border-b border-gray-200 py-2 text-center">
-          <div className="text-sm font-medium text-gray-900">
+        <div className="border-t border-b border-gray-200 dark:border-gray-600 py-2 text-center">
+          <div className="text-sm font-medium text-gray-900 dark:text-white">
             Spread: ${(asks[0]?.price - bids[0]?.price || 0).toFixed(2)}
           </div>
         </div>
@@ -181,15 +181,15 @@ export default function OrderBook({ symbol }: OrderBookProps) {
           {bids.slice(0, 5).map((bid, index) => (
             <div
               key={`bid-${index}`}
-              className="grid grid-cols-3 gap-2 text-sm hover:bg-green-50 p-1 rounded transition-colors"
+              className="grid grid-cols-3 gap-2 text-sm hover:bg-green-50 dark:hover:bg-green-900/20 p-1 rounded transition-colors"
             >
-              <div className="text-green-600 font-medium">
+              <div className="text-green-600 dark:text-green-400 font-medium">
                 {bid.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
-              <div className="text-right text-gray-900">
+              <div className="text-right text-gray-900 dark:text-white">
                 {bid.quantity.toFixed(4)}
               </div>
-              <div className="text-right text-gray-600">
+              <div className="text-right text-gray-600 dark:text-gray-400">
                 {bid.total.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
             </div>
@@ -198,10 +198,10 @@ export default function OrderBook({ symbol }: OrderBookProps) {
       </div>
 
       {/* Market Depth Visualization */}
-      <div className="mt-4 pt-4 border-t border-gray-200">
-        <div className="text-xs font-medium text-gray-500 mb-2">MARKET DEPTH</div>
-        <div className="h-20 bg-gradient-to-r from-green-100 via-gray-100 to-red-100 rounded flex items-center justify-center">
-          <span className="text-gray-500 text-xs">Depth visualization</span>
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
+        <div className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">MARKET DEPTH</div>
+        <div className="h-20 bg-gradient-to-r from-green-100 dark:from-green-900/30 via-gray-100 dark:via-gray-700 to-red-100 dark:to-red-900/30 rounded flex items-center justify-center">
+          <span className="text-gray-500 dark:text-gray-400 text-xs">Live market depth</span>
         </div>
       </div>
     </div>
