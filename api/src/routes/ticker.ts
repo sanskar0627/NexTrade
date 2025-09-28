@@ -9,7 +9,7 @@ tickersRouter.get("/", async (req, res) => {
     try {
         const markets = await prisma.market.findMany();
         
-        const tickers = markets.map(market => ({
+        const tickers = markets.map((market: any) => ({
             symbol: market.symbol,
             lastPrice: market.lastPrice,
             high: market.high,

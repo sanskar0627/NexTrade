@@ -18,7 +18,7 @@ export const Markets = () => {
         <div className="flex flex-col w-full rounded-lg bg-baseBackgroundL1 px-5 py-3">
           <table className="w-full table-auto">
             <MarketHeader />
-            {tickers?.map((m) => <MarketRow market={m} />)}
+            {tickers?.map((m) => <MarketRow key={m.symbol} market={m} />)}
           </table>
         </div>
       </div>

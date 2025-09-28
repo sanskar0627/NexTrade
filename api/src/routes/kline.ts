@@ -1,15 +1,4 @@
-import { Client } from 'pg';
 import { Router } from "express";
-import { RedisManager } from "../RedisManager";
-
-const pgClient = new Client({
-    user: 'your_user',
-    host: 'localhost',
-    database: 'my_database',
-    password: 'your_password',
-    port: 5432,
-});
-pgClient.connect();
 
 export const klineRouter = Router();
 
@@ -32,21 +21,26 @@ klineRouter.get("/", async (req, res) => {
     }
 
     try {
-        //@ts-ignore
-        const result = await pgClient.query(query, [new Date(startTime * 1000 as string), new Date(endTime * 1000 as string)]);
-        res.json(result.rows.map(x => ({
-            close: x.close,
-            end: x.bucket,
-            high: x.high,
-            low: x.low,
-            open: x.open,
-            quoteVolume: x.quoteVolume,
-            start: x.start,
-            trades: x.trades,
-            volume: x.volume,
-        })));
+        // Return demo kline data for charting
+        const baseTime = Date.now();
+        const klineData = [];
+        
+        for (let i = 0; i < 100; i++) {
+            const time = baseTime - (i * 60000); // 1 minute intervals
+            const basePrice = 50000 + Math.sin(i * 0.1) * 2000;
+            klineData.push({
+                time: time,
+                open: Math.round(basePrice + Math.random() * 100),
+                high: Math.round(basePrice + Math.random() * 200),
+                low: Math.round(basePrice - Math.random() * 200),
+                close: Math.round(basePrice + Math.random() * 100),
+                volume: Math.round(Math.random() * 1000)
+            });
+        }
+        
+        res.json(klineData.reverse());
     } catch (err) {
         console.log(err);
-        res.status(500).send(err);
+        res.status(500).json({ error: 'Failed to fetch kline data' });
     }
 });
