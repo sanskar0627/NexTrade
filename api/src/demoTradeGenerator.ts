@@ -1,6 +1,5 @@
 import { prisma } from './lib/prisma';
 import { RedisManager } from './RedisManager';
-
 const redisManager = RedisManager.getInstance();
 
 interface DemoTrade {

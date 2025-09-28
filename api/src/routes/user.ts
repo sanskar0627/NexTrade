@@ -3,8 +3,6 @@ import express, { Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 
-const router = express.Router();
-
 // Get user balances
 router.get('/balance', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
   try {

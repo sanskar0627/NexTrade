@@ -8,6 +8,7 @@ import { tickersRouter } from "./routes/ticker";
 import authRouter from "./routes/auth";
 import userRouter from "./routes/user";
 import { startDemoGenerator } from "./demoTradeGenerator";
+import { initializeDatabase, disconnectDatabase } from "./lib/prisma";
 
 const app = express();
 
@@ -69,13 +70,36 @@ app.listen(PORT, '0.0.0.0', async () => {
     console.log(`🌐 Health check: http://localhost:${PORT}/health`);
     console.log(`📊 API endpoints: http://localhost:${PORT}/api/v1/`);
     
+    // Initialize database connection
+    const dbConnected = await initializeDatabase();
+    if (!dbConnected) {
+        console.error("❌ Failed to connect to database - server may not function properly");
+    }
+    
     // Start demo trade generator for live trades
     setTimeout(async () => {
         try {
-            await startDemoGenerator();
-            console.log("✅ Demo trade generator started successfully");
+            if (dbConnected) {
+                await startDemoGenerator();
+                console.log("✅ Demo trade generator started successfully");
+            } else {
+                console.log("⚠️ Skipping demo generator - database not connected");
+            }
         } catch (error) {
             console.error("❌ Failed to start demo trade generator:", error);
         }
     }, 2000); // Wait 2 seconds for server to fully start
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    console.log('⚠️ SIGTERM received, shutting down gracefully');
+    await disconnectDatabase();
+    process.exit(0);
+});
+
+process.on('SIGINT', async () => {
+    console.log('⚠️ SIGINT received, shutting down gracefully');
+    await disconnectDatabase();
+    process.exit(0);
 });
