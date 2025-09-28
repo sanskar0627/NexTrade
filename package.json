@@ -22,6 +22,7 @@
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^2.4.3",
     "lightweight-charts": "^4.1.6",
+    "lucide-react": "^0.544.0",
     "next": "^14.2.4",
     "next-auth": "^4.24.7",
     "react": "^18.3.1",
