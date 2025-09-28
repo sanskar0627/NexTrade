@@ -1,176 +1,66 @@
-import express from "express";
-import { OrderInputSchema } from "./types.js";
-import { orderbook, bookWithQuantity } from "./orderbook.js";
-
-const BASE_ASSET = "BTC";
-const QUOTE_ASSET = "USD";
+import express from 'express';
+import cors from 'cors';
+import { OrderBookManager } from './orderbook.js';
+import { redisManager } from './redisClient.js';
+import { v4 as uuidv4 } from 'uuid';
+import type { Bid, Ask } from './types.js';
 
 const app = express();
+const orderBookManager = new OrderBookManager();
+
+app.use(cors());
 app.use(express.json());
 
-let GLOBAL_TRADE_ID = 0;
-
-app.post("/api/v1/order", (req, res) => {
-  const order = OrderInputSchema.safeParse(req.body);
-  if (!order.success) {
-    res.status(400).send(order.error.message);
-    return;
+// Validation middleware
+const validateOrder = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const { price, quantity } = req.body;
+  if (!price || !quantity || price <= 0 || quantity <= 0) {
+    return res.status(400).json({ error: 'Invalid order parameters' });
   }
+  next();
+};
 
-  const { baseAsset, quoteAsset, price, quantity, side, kind } = order.data;
-  const orderId = getOrderId();
-
-  if (baseAsset !== BASE_ASSET || quoteAsset !== QUOTE_ASSET) {
-    res.status(400).send("Invalid base or quote asset");
-    return;
+app.post('/bid', validateOrder, async (req, res) => {
+  try {
+    const bid: Bid = {
+      id: uuidv4(),
+      price: req.body.price,
+      quantity: req.body.quantity,
+      timestamp: new Date()
+    };
+    orderBookManager.insertBid(bid);
+    orderBookManager.matchOrders();
+    await redisManager.saveOrderBook(orderBookManager.getOrderBook());
+    res.json({ success: true, orderId: bid.id });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to process bid' });
   }
-
-  const { executedQty, fills } = fillOrder(
-    orderId,
-    price,
-    quantity,
-    side,
-    kind
-  );
-
-  res.send({
-    orderId,
-    executedQty,
-    fills,
-  });
 });
 
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
+app.post('/ask', validateOrder, async (req, res) => {
+  try {
+    const ask: Ask = {
+      id: uuidv4(),
+      price: req.body.price,
+      quantity: req.body.quantity,
+      timestamp: new Date()
+    };
+    orderBookManager.insertAsk(ask);
+    orderBookManager.matchOrders();
+    await redisManager.saveOrderBook(orderBookManager.getOrderBook());
+    res.json({ success: true, orderId: ask.id });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to process ask' });
+  }
 });
 
-function getOrderId(): string {
-  return (
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15)
-  );
-}
-
-interface Fill {
-  price: number;
-  qty: number;
-  tradeId: number;
-}
-
-function fillOrder(
-  orderId: string,
-  price: number,
-  quantity: number,
-  side: "buy" | "sell",
-  type?: "ioc"
-): { status: "rejected" | "accepted"; executedQty: number; fills: Fill[] } {
-  const fills: Fill[] = [];
-  const maxFillQuantity = getFillAmount(price, quantity, side); // 20
-  let executedQty = 0;
-
-  if (type === "ioc" && maxFillQuantity < quantity) {
-    return { status: "rejected", executedQty: maxFillQuantity, fills: [] };
+app.get('/orderbook', async (req, res) => {
+  try {
+    res.json(orderBookManager.getOrderBook());
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch orderbook' });
   }
+});
 
-  if (side === "buy") {
-    // asks should be sorted before you try to fill them
-    orderbook.asks.forEach((o) => {
-      if (o.price <= price && quantity > 0) {
-        const filledQuantity = Math.min(quantity, o.quantity);
-        o.quantity -= filledQuantity;
-        bookWithQuantity.asks[o.price] =
-          (bookWithQuantity.asks[o.price] || 0) - filledQuantity;
-        fills.push({
-          price: o.price,
-          qty: filledQuantity,
-          tradeId: GLOBAL_TRADE_ID++,
-        });
-        executedQty += filledQuantity;
-        quantity -= filledQuantity;
-        if (o.quantity === 0) {
-          orderbook.asks.splice(orderbook.asks.indexOf(o), 1);
-        }
-        if (bookWithQuantity.asks[price] === 0) {
-          delete bookWithQuantity.asks[price];
-        }
-      }
-    });
-
-    // Place on the book if order not filled
-    if (quantity !== 0) {
-      orderbook.bids.push({
-        price,
-        quantity: quantity - executedQty,
-        side: "bid",
-        orderId,
-      });
-      bookWithQuantity.bids[price] =
-        (bookWithQuantity.bids[price] || 0) + (quantity - executedQty);
-    }
-  } else {
-    orderbook.bids.forEach((o) => {
-      if (o.price >= price && quantity > 0) {
-        const filledQuantity = Math.min(quantity, o.quantity);
-        o.quantity -= filledQuantity;
-        bookWithQuantity.bids[price] =
-          (bookWithQuantity.bids[price] || 0) - filledQuantity;
-        fills.push({
-          price: o.price,
-          qty: filledQuantity,
-          tradeId: GLOBAL_TRADE_ID++,
-        });
-        executedQty += filledQuantity;
-        quantity -= filledQuantity;
-        if (o.quantity === 0) {
-          orderbook.bids.splice(orderbook.bids.indexOf(o), 1);
-        }
-        if (bookWithQuantity.bids[price] === 0) {
-          delete bookWithQuantity.bids[price];
-        }
-      }
-    });
-
-    // Place on the book if order not filled
-    if (quantity !== 0) {
-      orderbook.asks.push({
-        price,
-        quantity: quantity,
-        side: "ask",
-        orderId,
-      });
-      bookWithQuantity.asks[price] =
-        (bookWithQuantity.asks[price] || 0) + quantity;
-    }
-  }
-  //just cehcking the ordebook  and  bookwithquanity later delete it 
-  console.log("OrderBook",orderbook);
-  console.log("Bookwithquantity",bookWithQuantity);
-
-  return {
-    status: "accepted",
-    executedQty,
-    fills,
-  };
-}
-
-function getFillAmount(
-  price: number,
-  quantity: number,
-  side: "buy" | "sell"
-): number {
-  let filled = 0;
-  if (side === "buy") {
-    orderbook.asks.forEach((o) => {
-      if (o.price < price) {
-        filled += Math.min(quantity, o.quantity);
-      }
-    });
-  } else {
-    orderbook.bids.forEach((o) => {
-      if (o.price > price) {
-        filled += Math.min(quantity, o.quantity);
-      }
-    });
-  }
-  return filled;
-}
+const PORT = process.env.PORT || 3001; // Changed from 3000 to 3001
+app.listen(PORT, () => console.log(`Order book server running on port ${PORT}`));

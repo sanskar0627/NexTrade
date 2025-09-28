@@ -9,3 +9,18 @@ export const OrderInputSchema = z.object({
   type: z.enum(['limit', 'market']),
   kind: z.enum(['ioc']).optional(),
 });
+
+export interface Order {
+  id: string;
+  price: number;
+  quantity: number;
+  timestamp: Date;
+}
+
+export interface Bid extends Order {}
+export interface Ask extends Order {}
+
+export interface OrderBook {
+  bids: Bid[];
+  asks: Ask[];
+}
