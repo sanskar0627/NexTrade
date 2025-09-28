@@ -2,7 +2,7 @@ import axios from "axios";
 import { Depth, KLine, Ticker, Trade } from "./types";
 import { getToken } from "./auth";
 
-const BASE_URL = "http://localhost:3000/api/v1";
+const BASE_URL = "http://localhost:3001/api/v1";
 
 // Create axios instance with auth interceptor
 const apiClient = axios.create({
@@ -56,7 +56,7 @@ export async function getUserBalance(): Promise<any[]> {
 
 export async function getUserOrders(market?: string): Promise<any[]> {
     const params = market ? { market } : {};
-    const response = await apiClient.get('/user/orders', { params });
+    const response = await apiClient.get('/order/history', { params });
     return response.data;
 }
 

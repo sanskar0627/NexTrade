@@ -21,8 +21,10 @@ app.use("/api/v1/tickers", tickersRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/user", userRouter);
 
-app.listen(3000, async () => {
-    console.log("Server is running on port 3000");
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, async () => {
+    console.log(`Server is running on port ${PORT}`);
     
     // Start demo trade generator for live trades
     setTimeout(async () => {
