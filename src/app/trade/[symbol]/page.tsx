@@ -95,7 +95,6 @@ export default async function TradePage({ params }: TradePageProps) {
             <OrderForm
               symbol={asset.symbol}
               assetId={asset.id}
-              currentPrice={asset.symbol === 'SOLUSDT' ? 205.80 : asset.symbol === 'ETHUSDT' ? 2420.75 : 43750}
               balance={parseFloat(account?.balance.toString() || '0')}
             />
 

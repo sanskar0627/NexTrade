@@ -384,17 +384,26 @@ export class TradingEngine {
   }
 
   async getCurrentMarketPrice(symbol: string): Promise<number | null> {
-    // This would integrate with your market data feeds
-    // For now, return a mock price based on symbol
-    const mockPrices: Record<string, number> = {
-      'BTCUSDT': 43500.00,
-      'ETHUSDT': 2650.00,
-      'SOLUSDT': 145.50,
-      'AAPL': 195.50,
-      'MSFT': 415.25,
-      'TSLA': 248.75,
-    };
+    try {
+      // Use unified price service for consistent pricing
+      const { PriceService } = await import('./price-service');
+      const priceService = PriceService.getInstance();
+      return await priceService.getCurrentPrice(symbol);
+    } catch (error) {
+      console.error(`Failed to get market price for ${symbol}:`, error);
+      
+      // Fallback prices with correct XRP price!
+      const fallbackPrices: Record<string, number> = {
+        'BTCUSDT': 43500.00,
+        'ETHUSDT': 2650.00,
+        'SOLUSDT': 205.80,    // Correct SOL price
+        'XRPUSDT': 2.831,     // Correct XRP price (NOT $43,750!)
+        'AAPL': 175.50,
+        'MSFT': 415.25,
+        'TSLA': 248.75,
+      };
 
-    return mockPrices[symbol] || null;
+      return fallbackPrices[symbol] || null;
+    }
   }
 }

@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { priceService } from '@/lib/price-service';
 
 interface OrderFormProps {
   symbol: string;
   assetId: string;
-  currentPrice: number;
   balance: number;
   onOrderSubmit?: () => void;
 }
@@ -14,7 +14,6 @@ interface OrderFormProps {
 export default function OrderForm({ 
   symbol, 
   assetId, 
-  currentPrice, 
   balance,
   onOrderSubmit 
 }: OrderFormProps) {
@@ -25,14 +24,41 @@ export default function OrderForm({
   const [limitPrice, setLimitPrice] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Real-time price state
+  const [currentPrice, setCurrentPrice] = useState(0);
+  const [priceLoading, setPriceLoading] = useState(true);
 
   // Calculate estimated total
   const price = type === 'market' ? currentPrice : parseFloat(limitPrice) || 0;
   const qty = parseFloat(quantity) || 0;
   const estimatedTotal = price * qty;
 
+  // Fetch real-time price data
   useEffect(() => {
-    if (type === 'limit' && !limitPrice) {
+    const fetchPrice = async () => {
+      try {
+        const priceData = await priceService.getPriceData(symbol);
+        setCurrentPrice(priceData.price);
+        setPriceLoading(false);
+      } catch (error) {
+        console.error('Failed to fetch price:', error);
+        setPriceLoading(false);
+      }
+    };
+
+    fetchPrice();
+
+    // Subscribe to real-time updates
+    const unsubscribe = priceService.subscribeToPriceUpdates(symbol, (priceData) => {
+      setCurrentPrice(priceData.price);
+    });
+
+    return unsubscribe;
+  }, [symbol]);
+
+  useEffect(() => {
+    if (type === 'limit' && !limitPrice && currentPrice > 0) {
       setLimitPrice(currentPrice.toString());
     }
   }, [type, currentPrice, limitPrice]);
@@ -196,7 +222,9 @@ export default function OrderForm({
         <div className="bg-gray-50 p-3 rounded-md space-y-1">
           <div className="flex justify-between text-sm">
             <span>Current Price:</span>
-            <span className="font-medium">${currentPrice.toFixed(2)}</span>
+            <span className="font-medium">
+              {priceLoading ? 'Loading...' : `$${currentPrice.toFixed(2)}`}
+            </span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Estimated Total:</span>
@@ -211,7 +239,7 @@ export default function OrderForm({
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={loading || !quantity || (type === 'limit' && !limitPrice)}
+          disabled={loading || priceLoading || !quantity || (type === 'limit' && !limitPrice)}
           className={`w-full py-3 px-4 rounded-md font-medium transition-colors ${
             side === 'buy'
               ? 'bg-green-500 hover:bg-green-600 text-white'
@@ -220,6 +248,8 @@ export default function OrderForm({
         >
           {loading
             ? 'Placing Order...'
+            : priceLoading
+            ? 'Loading Price...'
             : `Place ${side.toUpperCase()} Order`
           }
         </button>

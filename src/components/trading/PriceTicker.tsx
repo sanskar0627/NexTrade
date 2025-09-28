@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, memo } from 'react';
+import { priceService } from '@/lib/price-service';
 
 interface PriceTickerProps {
   symbol: string;
@@ -29,95 +30,43 @@ const PriceTicker = memo(function PriceTicker({ symbol, initialPrice = 0 }: Pric
   const [lastPrice, setLastPrice] = useState(initialPrice);
 
   useEffect(() => {
-    // Fetch real market data
+    // Fetch real market data using unified price service
     const fetchPrice = async () => {
       try {
-        // Try to get real data first
-        if (symbol.endsWith('USDT')) {
-          await fetchBinanceTicker();
-        } else {
-          // For stocks, use mock realistic data or API data
-          await fetchStockTicker();
-        }
+        const data = await priceService.getPriceData(symbol);
+        
+        setLastPrice(priceData.price);
+        setPriceData({
+          price: data.price,
+          change24h: data.change24h,
+          changePercent: data.changePercent,
+          high24h: data.high24h,
+          low24h: data.low24h,
+          volume24h: data.volume24h,
+        });
+        setLoading(false);
       } catch (error) {
         console.error('Failed to fetch price data:', error);
-        // Fallback to realistic mock data
-        generateRealisticPriceData();
+        setLoading(false);
       }
-    };
-
-    const fetchBinanceTicker = async () => {
-      try {
-        // Use our enhanced API route for better reliability
-        const response = await fetch(`/api/binance?symbol=${symbol}&type=ticker`);
-        if (response.ok) {
-          const data = await response.json();
-          const newPriceData = {
-            price: parseFloat(data.lastPrice),
-            change24h: parseFloat(data.priceChange),
-            changePercent: parseFloat(data.priceChangePercent),
-            high24h: parseFloat(data.highPrice),
-            low24h: parseFloat(data.lowPrice),
-            volume24h: parseFloat(data.volume),
-          };
-          
-          setLastPrice(priceData.price);
-          setPriceData(newPriceData);
-          setLoading(false);
-          return;
-        }
-      } catch (error) {
-        console.log('Enhanced Binance API not available, using mock data');
-      }
-      
-      // Fallback to realistic mock data
-      generateRealisticPriceData();
-    };
-
-    const fetchStockTicker = async () => {
-      // For stocks, generate realistic mock data (in production, use Finnhub API)
-      generateRealisticPriceData();
-    };
-
-    const generateRealisticPriceData = () => {
-      // Generate realistic price data based on symbol
-      let basePrice = 43500;
-      
-      if (symbol === 'SOLUSDT') {
-        basePrice = 205.50;
-      } else if (symbol === 'ETHUSDT') {
-        basePrice = 2400.75;
-      } else if (symbol === 'AAPL') {
-        basePrice = 175.25;
-      } else if (symbol === 'TSLA') {
-        basePrice = 248.90;
-      }
-
-      // Realistic daily changes
-      const changePercent = (Math.random() - 0.5) * 10; // ±5% daily change
-      const change24h = basePrice * (changePercent / 100);
-      const currentPrice = basePrice + change24h;
-      
-      const newPriceData = {
-        price: currentPrice,
-        change24h,
-        changePercent,
-        high24h: currentPrice + Math.abs(change24h) * 0.5,
-        low24h: currentPrice - Math.abs(change24h) * 0.5,
-        volume24h: Math.random() * 10000000 + 1000000, // Random volume
-      };
-
-      setLastPrice(priceData.price);
-      setPriceData(newPriceData);
-      setLoading(false);
     };
 
     fetchPrice();
 
-    // Set up price updates (in a real app, this would be WebSocket)
-    const interval = setInterval(fetchPrice, 5000); // Update every 5 seconds
+    // Subscribe to real-time price updates
+    const unsubscribe = priceService.subscribeToPriceUpdates(symbol, (data) => {
+      setLastPrice(priceData.price);
+      setPriceData({
+        price: data.price,
+        change24h: data.change24h,
+        changePercent: data.changePercent,
+        high24h: data.high24h,
+        low24h: data.low24h,
+        volume24h: data.volume24h,
+      });
+    });
 
-    return () => clearInterval(interval);
+    return unsubscribe;
   }, [symbol]);
 
   // Price change animation effect
