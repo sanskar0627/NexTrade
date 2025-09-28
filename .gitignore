@@ -1,17 +1,35 @@
+# Dependencies
 node_modules/
-dist/
+.next/
+out/
 build/
-.env
+dist/
+
+# Environment files
+.env*
+!.env.sample
+
+# Database
+*.db
+*.db-journal
+
+# Logs
+*.log
+npm-debug.log*
+.npm
+
+# Runtime data
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .vscode/
 .idea/
 .vs/
-.DS_Store
-Thumbs.db
-*.log
-npm-debug.log*
-node_modules/
-dist/
-node_modules/
-dist/
-*/dist/
     

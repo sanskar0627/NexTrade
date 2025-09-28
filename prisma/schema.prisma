@@ -1,0 +1,144 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String?
+  country      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  accounts     Account[]
+  orders       Order[]
+  positions    Position[]
+  snapshots    BalanceSnapshot[]
+  ledgerEntries Ledger[]
+  
+  @@map("users")
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  userId    String
+  currency  String   // "USD"
+  balance   Decimal  @db.Decimal(18,2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgerEntries Ledger[]
+  
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Asset {
+  id          String   @id // "BTCUSDT", "AAPL"
+  type        String   // "crypto" | "stock"
+  symbol      String   @unique
+  name        String
+  tickSize    Decimal  @db.Decimal(18,8)
+  minNotional Decimal  @db.Decimal(18,4)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  
+  orders    Order[]
+  positions Position[]
+  
+  @@map("assets")
+}
+
+model Order {
+  id         String   @id @default(cuid())
+  userId     String
+  assetId    String
+  side       String   // "buy" | "sell"
+  type       String   // "market" | "limit"
+  qty        Decimal  @db.Decimal(18,8)
+  limitPrice Decimal? @db.Decimal(18,8)
+  status     String   // "filled" | "rejected" | "open" | "cancelled" | "partial"
+  reason     String?  // rejection reason
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset Asset @relation(fields: [assetId], references: [id])
+  fills Fill[]
+  
+  @@index([userId, assetId, status])
+  @@index([status, createdAt])
+  @@map("orders")
+}
+
+model Fill {
+  id        String   @id @default(cuid())
+  orderId   String
+  price     Decimal  @db.Decimal(18,8)
+  qty       Decimal  @db.Decimal(18,8)
+  fee       Decimal  @db.Decimal(18,8) @default(0)
+  createdAt DateTime @default(now())
+  
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+  @@index([createdAt])
+  @@map("fills")
+}
+
+model Position {
+  id        String   @id @default(cuid())
+  userId    String
+  assetId   String
+  qty       Decimal  @db.Decimal(18,8)
+  avgPrice  Decimal  @db.Decimal(18,8)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset Asset @relation(fields: [assetId], references: [id])
+  
+  @@unique([userId, assetId])
+  @@map("positions")
+}
+
+model Ledger {
+  id           String   @id @default(cuid())
+  userId       String
+  accountId    String
+  change       Decimal  @db.Decimal(18,8) // +/- amount
+  balanceAfter Decimal  @db.Decimal(18,8)
+  refType      String   // "deposit" | "withdrawal" | "trade_fill" | "reversal" | "demo_credit"
+  refId        String?  // e.g., fillId, orderId
+  meta         Json?
+  createdAt    DateTime @default(now())
+  
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, accountId, createdAt])
+  @@index([refType, refId])
+  @@map("ledger")
+}
+
+model BalanceSnapshot {
+  id       String   @id @default(cuid())
+  userId   String
+  balance  Decimal  @db.Decimal(18,2)
+  asOfDate DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, asOfDate])
+  @@map("balance_snapshots")
+}
