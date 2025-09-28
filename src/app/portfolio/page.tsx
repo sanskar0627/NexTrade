@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatCurrency, toNumber, formatPercent } from '@/lib/format-currency';
 import { ClickablePositionRow } from '@/components/portfolio/ClickablePositionRow';
+import { useMemoizedPriceCalculations, useMemoizedOrderCalculations } from '@/hooks/usePerformance';
 
 interface PortfolioData {
   account: {
@@ -52,6 +53,10 @@ export default function PortfolioPage() {
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('positions');
+
+  // Memoized calculations for performance
+  const portfolioMetrics = useMemoizedPriceCalculations(portfolio?.positions || []);
+  const orderMetrics = useMemoizedOrderCalculations(portfolio?.orders || []);
 
   useEffect(() => {
     if (status === 'unauthenticated') {

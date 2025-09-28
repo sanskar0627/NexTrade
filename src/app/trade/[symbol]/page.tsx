@@ -5,10 +5,8 @@ import { prisma } from '@/lib/prisma';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { AssetLogo } from '@/components/ui/AssetLogo';
-import PriceTicker from '@/components/trading/PriceTicker';
 import OrderForm from '@/components/trading/OrderForm';
-import OrderBook from '@/components/trading/OrderBook';
-import TradingChart from '@/components/trading/TradingChart';
+import { TradingChart, OrderBook, MemoizedPriceTicker as PriceTicker } from '@/components/dynamic';
 
 interface TradePageProps {
   params: { symbol: string };

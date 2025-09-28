@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth';
 import Link from 'next/link';
 import { ArrowRight, TrendingUp, Shield, BarChart3, ChevronRight } from 'lucide-react';
 import { AssetLogo } from '@/components/ui/AssetLogo';
-import MarketOverview from '@/components/MarketOverview';
+import { MarketOverview } from '@/components/dynamic';
 
 export default async function HomePage() {
   // Server-side auth check for instant redirect
