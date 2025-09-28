@@ -4,7 +4,6 @@ import { SwapUI } from "@/app/components/SwapUI";
 import { TradeView } from "@/app/components/TradeView";
 import { Depth } from "@/app/components/depth/Depth";
 import { useParams } from "next/navigation";
-import OrderBook from '../../components/OrderBook';
 
 export default function Page() {
     const { market } = useParams();
@@ -25,9 +24,6 @@ export default function Page() {
             <div className="flex flex-col w-[250px]">
                 <SwapUI market={market as string} />
             </div>
-        </div>
-        <div className="col-span-3">
-            <OrderBook />
         </div>
     </div>
 }

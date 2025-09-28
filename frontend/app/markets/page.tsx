@@ -1,8 +1,7 @@
+import { Markets } from "../components/Markets";
 
 export default function Page() {
-    return <div className="flex flex-row flex-1">
-        <div className="flex flex-col justify-center items-center flex-1 pt-[100px]">
-            Markets page
-        </div>
-    </div>
+    return  <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <Markets />
+  </main>
 }

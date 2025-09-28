@@ -1,3 +1,4 @@
+
 export interface KLine {
     close: string;
     end: string;
@@ -36,16 +37,4 @@ export interface Ticker {
     "symbol": string,
     "trades": string,
     "volume": string
-}
-
-export interface Order {
-  id: string;
-  price: number;
-  quantity: number;
-  timestamp: Date;
-}
-
-export interface OrderBook {
-  bids: Order[];
-  asks: Order[];
 }

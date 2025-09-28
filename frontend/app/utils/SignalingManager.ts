@@ -1,6 +1,7 @@
 import { Ticker } from "./types";
 
-export const BASE_URL = "wss://ws.backpack.exchange/"
+// export const BASE_URL = "wss://ws.backpack.exchange/"
+export const BASE_URL = "ws://localhost:3001"
 
 export class SignalingManager {
     private ws: WebSocket;
@@ -46,7 +47,7 @@ export class SignalingManager {
                             quoteVolume: message.data.V,
                             symbol: message.data.s,
                         }
-
+                        console.log(newTicker);
                         callback(newTicker);
                    }
                    if (type === "depth") {
