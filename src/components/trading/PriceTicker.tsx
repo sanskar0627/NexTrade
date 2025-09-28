@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 
 interface PriceTickerProps {
   symbol: string;
@@ -16,7 +16,7 @@ interface PriceData {
   volume24h: number;
 }
 
-export default function PriceTicker({ symbol, initialPrice = 0 }: PriceTickerProps) {
+const PriceTicker = memo(function PriceTicker({ symbol, initialPrice = 0 }: PriceTickerProps) {
   const [priceData, setPriceData] = useState<PriceData>({
     price: initialPrice,
     change24h: 0,
@@ -185,4 +185,6 @@ export default function PriceTicker({ symbol, initialPrice = 0 }: PriceTickerPro
       </div>
     </div>
   );
-}
+});
+
+export default PriceTicker;
