@@ -1,21 +1,28 @@
 {
   "name": "db",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "type": "module",
   "scripts": {
+    "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "npm run build && node dist/index.js",
-    "seed:db": "npm run build && node dist/seed-db.js",
-    "refresh:views": "npm run build && node dist/cron.js"
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx src/seed-db.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@types/pg": "^8.11.6",
-    "pg": "^8.12.0",
-    "redis": "^4.6.14"
+    "@prisma/client": "^5.6.0",
+    "bcryptjs": "^2.4.3",
+    "express": "^4.18.2",
+    "redis": "^4.6.10"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^4.17.20",
+    "@types/node": "^20.8.7",
+    "prisma": "^5.6.0",
+    "tsx": "^3.14.0",
+    "typescript": "^5.2.2"
   }
 }
