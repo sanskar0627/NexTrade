@@ -150,19 +150,13 @@ class DemoTradeGenerator {
 // Export singleton instance
 export const demoTradeGenerator = new DemoTradeGenerator();
 
-// Auto-start if this file is run directly
-if (require.main === module) {
-  async function main() {
-    await demoTradeGenerator.generateInitialTrades();
-    demoTradeGenerator.start();
-    
-    // Graceful shutdown
-    process.on('SIGINT', () => {
-      console.log('Shutting down demo trade generator...');
-      demoTradeGenerator.stop();
-      process.exit(0);
-    });
-  }
-  
-  main().catch(console.error);
+// Auto-start function for testing
+export async function startDemoGenerator() {
+  await demoTradeGenerator.generateInitialTrades();
+  demoTradeGenerator.start();
+}
+
+// Graceful shutdown
+export function stopDemoGenerator() {
+  demoTradeGenerator.stop();
 }
