@@ -197,7 +197,7 @@ export class TradingEngine {
     const estimatedValue = orderRequest.qty * price;
     
     if (estimatedValue < minNotional && price > 0) {
-      return { valid: false, error: `Order value $${estimatedValue.toFixed(2)} must be at least $${minNotional}` };
+      return { valid: false, error: `Order value $${estimatedValue.toFixed(2)} must be at least $${minNotional.toFixed(2)}` };
     }
 
     // For buy orders, check if user has enough balance

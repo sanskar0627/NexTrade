@@ -84,9 +84,9 @@ export default async function TradePage({ params }: TradePageProps) {
         <PriceTicker symbol={asset.symbol} />
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
-          {/* Chart Area - Takes most space */}
+          {/* Chart Area - Takes most space with enhanced sizing */}
           <div className="lg:col-span-2">
-            <TradingChart symbol={asset.symbol} height={500} />
+            <TradingChart symbol={asset.symbol} height={650} />
           </div>
 
           {/* Trading Panel */}

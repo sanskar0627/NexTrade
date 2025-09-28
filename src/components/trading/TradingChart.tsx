@@ -17,7 +17,7 @@ interface CandleData {
   volume: number;
 }
 
-export default function TradingChart({ symbol, height = 400 }: TradingChartProps) {
+export default function TradingChart({ symbol, height = 600 }: TradingChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
@@ -263,11 +263,11 @@ export default function TradingChart({ symbol, height = 400 }: TradingChartProps
   const timeframes = ['5M', '15M', '1H', '4H', '1D'];
 
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
       {/* Chart Header */}
-      <div className="flex justify-between items-center p-4 border-b bg-gray-50">
+      <div className="flex justify-between items-center p-4 border-b bg-gray-50 dark:bg-gray-700">
         <div className="flex items-center space-x-4">
-          <h3 className="text-lg font-semibold text-gray-900">{symbol}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{symbol}</h3>
           {isLoading && (
             <div className="flex items-center text-sm text-gray-500">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
@@ -277,7 +277,7 @@ export default function TradingChart({ symbol, height = 400 }: TradingChartProps
         </div>
         
         {/* Timeframe Selector */}
-        <div className="flex space-x-1 bg-white rounded-lg p-1 border">
+        <div className="flex space-x-1 bg-white dark:bg-gray-600 rounded-lg p-1 border dark:border-gray-500">
           {timeframes.map((tf) => (
             <button
               key={tf}
