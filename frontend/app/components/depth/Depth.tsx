@@ -1,94 +1,69 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getDepth, getKlines, getTicker, getTrades } from "../../utils/httpClient";
+import { getDepth, getTicker } from "../../utils/httpClient";
 import { BidTable } from "./BidTable";
 import { AskTable } from "./AskTable";
-import { SignalingManager } from "../../utils/SignalingManager";
 
 export function Depth({ market }: {market: string}) {
-    const [bids, setBids] = useState<[string, string][]>();
-    const [asks, setAsks] = useState<[string, string][]>();
-    const [price, setPrice] = useState<string>();
+    const [bids, setBids] = useState<[string, string][]>([]);
+    const [asks, setAsks] = useState<[string, string][]>([]);
+    const [price, setPrice] = useState<string>('0');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        SignalingManager.getInstance().registerCallback("depth", (data: any) => {
-            console.log("depth has been updated");
-            console.log(data);
-            
-            setBids((originalBids) => {
-                const bidsAfterUpdate = [...(originalBids || [])];
-
-                for (let i = 0; i < bidsAfterUpdate.length; i++) {
-                    for (let j = 0; j < data.bids.length; j++)  {
-                        if (bidsAfterUpdate[i][0] === data.bids[j][0]) {
-                            bidsAfterUpdate[i][1] = data.bids[j][1];
-                            if (Number(bidsAfterUpdate[i][1]) === 0) {
-                                bidsAfterUpdate.splice(i, 1);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                for (let j = 0; j < data.bids.length; j++)  {
-                    if (Number(data.bids[j][1]) !== 0 && !bidsAfterUpdate.map(x => x[0]).includes(data.bids[j][0])) {
-                        bidsAfterUpdate.push(data.bids[j]);
-                        break;
-                    }
-                }
-                bidsAfterUpdate.sort((x, y) => Number(y[0]) > Number(x[0]) ? -1 : 1);
-                return bidsAfterUpdate; 
-            });
-
-            setAsks((originalAsks) => {
-                const asksAfterUpdate = [...(originalAsks || [])];
-
-                for (let i = 0; i < asksAfterUpdate.length; i++) {
-                    for (let j = 0; j < data.asks.length; j++)  {
-                        if (asksAfterUpdate[i][0] === data.asks[j][0]) {
-                            asksAfterUpdate[i][1] = data.asks[j][1];
-                            if (Number(asksAfterUpdate[i][1]) === 0) {
-                                asksAfterUpdate.splice(i, 1);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                for (let j = 0; j < data.asks.length; j++)  {
-                    if (Number(data.asks[j][1]) !== 0 && !asksAfterUpdate.map(x => x[0]).includes(data.asks[j][0])) {
-                        asksAfterUpdate.push(data.asks[j]);
-                        break;
-                    }
-                }
-                asksAfterUpdate.sort((x, y) => Number(y[0]) > Number(x[0]) ? 1 : -1);
-                return asksAfterUpdate; 
-            });
-        }, `DEPTH-${market}`);
+        loadDepthData();
         
-        SignalingManager.getInstance().sendMessage({"method":"SUBSCRIBE","params":[`depth@${market}`]});
+        // Refresh depth data every 3 seconds
+        const interval = setInterval(loadDepthData, 3000);
+        return () => clearInterval(interval);
+    }, [market]);
 
-        getDepth(market).then(d => {    
-            setBids(d.bids.reverse());
-            setAsks(d.asks);
-        });
-
-        getTicker(market).then(t => setPrice(t.lastPrice));
-        getTrades(market).then(t => setPrice(t[0].price));
-
-        return () => {
-            SignalingManager.getInstance().sendMessage({"method":"UNSUBSCRIBE","params":[`depth@${market}`]});
-            SignalingManager.getInstance().deRegisterCallback("depth", `DEPTH-${market}`);
+    const loadDepthData = async () => {
+        try {
+            const [depthData, tickerData] = await Promise.all([
+                getDepth(market),
+                getTicker(market)
+            ]);
+            
+            setBids(depthData.bids || []);
+            setAsks(depthData.asks || []);
+            setPrice(tickerData.lastPrice || '0');
+        } catch (error) {
+            console.error('Failed to load depth data:', error);
+        } finally {
+            setLoading(false);
         }
-    }, [])
+    };
     
-    return <div>
-        <TableHeader />
-        {asks && <AskTable asks={asks} />}
-        {price && <div>{price}</div>}
-        {bids && <BidTable bids={bids} />}
-    </div>
+    if (loading) {
+        return (
+            <div className="bg-baseBackgroundL1 p-4 h-full">
+                <div className="text-center text-gray-400">Loading order book...</div>
+            </div>
+        );
+    }
+    
+    return (
+        <div className="bg-baseBackgroundL1 h-full">
+            <div className="px-4 py-2 border-b border-slate-800">
+                <h3 className="text-sm font-medium text-white">Order Book</h3>
+            </div>
+            <TableHeader />
+            <div className="h-32 overflow-hidden">
+                <AskTable asks={asks.slice(0, 8)} />
+            </div>
+            <div className="px-4 py-2 border-y border-slate-800">
+                <div className="text-center text-lg font-mono text-white">
+                    ${parseFloat(price).toFixed(2)}
+                </div>
+                <div className="text-center text-xs text-gray-400">Last Price</div>
+            </div>
+            <div className="h-32 overflow-hidden">
+                <BidTable bids={bids.slice(0, 8)} />
+            </div>
+        </div>
+    );
 }
 
 function TableHeader() {
