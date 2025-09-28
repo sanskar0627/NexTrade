@@ -28,6 +28,15 @@ export class TradingEngine {
     orderRequest: OrderRequest,
     currentPrice?: number
   ): Promise<OrderResult> {
+    console.log('🔄 Processing order:', {
+      symbol: orderRequest.assetId,
+      side: orderRequest.side,
+      type: orderRequest.type,
+      qty: orderRequest.qty,
+      limitPrice: orderRequest.limitPrice,
+      currentPrice
+    });
+
     try {
       return await this.prisma.$transaction(
         async (tx) => {
@@ -37,6 +46,7 @@ export class TradingEngine {
           });
 
           if (!asset) {
+            console.error('❌ Asset not found:', orderRequest.assetId);
             return { success: false, error: 'Asset not found' };
           }
 
@@ -46,17 +56,24 @@ export class TradingEngine {
               userId: orderRequest.userId,
               currency: 'USD'
             },
-            // Lock the account for update
-            ...(tx as any).$queryRaw`SELECT * FROM accounts WHERE user_id = ${orderRequest.userId} AND currency = 'USD' FOR UPDATE`,
           });
 
           if (!account) {
+            console.error('❌ Account not found for user:', orderRequest.userId);
             return { success: false, error: 'Account not found' };
           }
 
+          console.log('✅ Found asset and account:', {
+            asset: asset.symbol,
+            balance: account.balance.toString(),
+            tickSize: asset.tickSize.toString(),
+            minNotional: asset.minNotional.toString()
+          });
+
           // Validate order parameters
-          const validation = this.validateOrder(orderRequest, asset, account);
+          const validation = this.validateOrder(orderRequest, asset, account, currentPrice);
           if (!validation.valid) {
+            console.error('❌ Order validation failed:', validation.error);
             return { success: false, error: validation.error };
           }
 
@@ -157,32 +174,41 @@ export class TradingEngine {
   private validateOrder(
     orderRequest: OrderRequest,
     asset: any,
-    account: any
+    account: any,
+    currentPrice?: number
   ): { valid: boolean; error?: string } {
     // Check minimum quantity
     if (orderRequest.qty <= 0) {
       return { valid: false, error: 'Quantity must be positive' };
     }
 
-    // Check tick size
+    // Check tick size for limit orders only
     const tickSize = parseFloat(asset.tickSize.toString());
-    if (orderRequest.limitPrice && orderRequest.limitPrice % tickSize !== 0) {
-      return { valid: false, error: `Price must be in increments of ${tickSize}` };
+    if (orderRequest.type === 'limit' && orderRequest.limitPrice) {
+      const priceRemainder = orderRequest.limitPrice % tickSize;
+      if (Math.abs(priceRemainder) > 0.000001) { // Allow for floating point precision
+        return { valid: false, error: `Price must be in increments of ${tickSize}` };
+      }
     }
 
-    // Check minimum notional
+    // Check minimum notional value
     const minNotional = parseFloat(asset.minNotional.toString());
-    const estimatedValue = orderRequest.qty * (orderRequest.limitPrice || 1);
-    if (estimatedValue < minNotional) {
-      return { valid: false, error: `Order value must be at least ${minNotional}` };
+    const price = orderRequest.type === 'market' ? (currentPrice || 0) : (orderRequest.limitPrice || 0);
+    const estimatedValue = orderRequest.qty * price;
+    
+    if (estimatedValue < minNotional && price > 0) {
+      return { valid: false, error: `Order value $${estimatedValue.toFixed(2)} must be at least $${minNotional}` };
     }
 
     // For buy orders, check if user has enough balance
     if (orderRequest.side === 'buy') {
       const balance = parseFloat(account.balance.toString());
-      const requiredBalance = orderRequest.qty * (orderRequest.limitPrice || 1);
-      if (balance < requiredBalance) {
-        return { valid: false, error: 'Insufficient balance' };
+      const requiredBalance = estimatedValue * 1.002; // Add 0.2% buffer for fees
+      if (balance < requiredBalance && price > 0) {
+        return { 
+          valid: false, 
+          error: `Insufficient balance. Need $${requiredBalance.toFixed(2)}, have $${balance.toFixed(2)}` 
+        };
       }
     }
 
