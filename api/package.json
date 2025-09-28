@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "description": "NexTrade API Server",
   "main": "dist/index.js",
-  "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "npx prisma generate && tsc",
     "start": "node dist/index.js",
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "start:prod": "npm run build && npm start",
+    "db:generate": "prisma generate",
+    "db:deploy": "prisma db push",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.6.0",
@@ -23,6 +26,7 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.8.7",
+    "prisma": "^6.16.2",
     "tsx": "^3.14.0",
     "typescript": "^5.2.2"
   }
