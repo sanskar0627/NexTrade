@@ -29,11 +29,7 @@ const nextConfig = {
       };
     }
 
-    // Tree shaking optimization
-    config.optimization = {
-      ...config.optimization,
-      usedExports: true,
-    };
+    // Tree shaking optimization (removed usedExports to fix cacheUnaffected conflict)
 
     return config;
   },
