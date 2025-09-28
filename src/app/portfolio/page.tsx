@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { formatCurrency, toNumber, formatPercent } from '@/lib/format-currency';
+import { ClickablePositionRow } from '@/components/portfolio/ClickablePositionRow';
 
 interface PortfolioData {
   account: {
@@ -186,36 +187,7 @@ export default function PortfolioPage() {
                       </thead>
                       <tbody>
                         {portfolio.positions.map((position) => (
-                          <tr key={position.id} className="border-b">
-                            <td className="py-4">
-                              <div>
-                                <div className="font-medium text-gray-900">
-                                  {position.asset.symbol}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {position.asset.name}
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-4 text-right">{position.qty}</td>
-                            <td className="py-4 text-right">{formatCurrency(position.avgPrice)}</td>
-                            <td className="py-4 text-right">{formatCurrency(position.currentPrice)}</td>
-                            <td className="py-4 text-right">{formatCurrency(position.marketValue)}</td>
-                            <td className={`py-4 text-right ${toNumber(position.pnl) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {formatCurrency(position.pnl)}
-                            </td>
-                            <td className={`py-4 text-right ${toNumber(position.pnlPercent) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                              {formatPercent(position.pnlPercent)}
-                            </td>
-                            <td className="py-4 text-right">
-                              <Link
-                                href={`/trade/${position.asset.symbol}`}
-                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                              >
-                                Trade
-                              </Link>
-                            </td>
-                          </tr>
+                          <ClickablePositionRow key={position.id} position={position} />
                         ))}
                       </tbody>
                     </table>
