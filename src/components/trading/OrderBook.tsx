@@ -18,16 +18,76 @@ export default function OrderBook({ symbol }: OrderBookProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Generate mock order book data (in real app, this would come from WebSocket)
-    const generateMockOrderBook = () => {
-      const basePrice = 43500; // Mock BTC price
-      const spread = 50;
+    // Fetch real market data or generate realistic mock data
+    const generateRealisticOrderBook = async () => {
+      try {
+        // Try to fetch real order book data
+        if (symbol.endsWith('USDT')) {
+          await fetchBinanceOrderBook();
+        } else {
+          // For stocks, generate realistic mock data based on current price
+          await generateRealisticMockData();
+        }
+      } catch (error) {
+        console.error('Failed to fetch order book:', error);
+        await generateRealisticMockData();
+      }
+    };
+
+    const fetchBinanceOrderBook = async () => {
+      try {
+        const response = await fetch(`https://api.binance.com/api/v3/depth?symbol=${symbol}&limit=20`);
+        if (response.ok) {
+          const data = await response.json();
+          
+          const binanceAsks = data.asks.map(([price, qty]: [string, string]) => ({
+            price: parseFloat(price),
+            quantity: parseFloat(qty),
+            total: parseFloat(price) * parseFloat(qty)
+          }));
+
+          const binanceBids = data.bids.map(([price, qty]: [string, string]) => ({
+            price: parseFloat(price),
+            quantity: parseFloat(qty),  
+            total: parseFloat(price) * parseFloat(qty)
+          }));
+
+          setAsks(binanceAsks);
+          setBids(binanceBids);
+          setLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.log('Binance API not available, using mock data');
+      }
       
-      // Generate asks (sell orders) - higher prices
+      // Fallback to mock data
+      await generateRealisticMockData();
+    };
+
+    const generateRealisticMockData = async () => {
+      // Get realistic base price for the symbol
+      let basePrice = 43500; // Default BTC price
+      
+      if (symbol === 'SOLUSDT') {
+        basePrice = 205; // Current SOL price
+      } else if (symbol === 'ETHUSDT') {
+        basePrice = 2400; // ETH price
+      } else if (symbol === 'AAPL') {
+        basePrice = 175; // Apple stock
+      } else if (symbol === 'TSLA') {
+        basePrice = 250; // Tesla stock
+      }
+
+      // Realistic spread (much smaller than $100)
+      const spreadPercent = symbol.endsWith('USDT') ? 0.001 : 0.002; // 0.1% for crypto, 0.2% for stocks
+      const spread = basePrice * spreadPercent;
+      
+      // Generate asks (sell orders) - higher prices  
       const mockAsks: OrderBookLevel[] = [];
       for (let i = 0; i < 10; i++) {
-        const price = basePrice + spread + (i * 25);
-        const quantity = Math.random() * 2 + 0.1;
+        const price = basePrice + spread/2 + (i * spread * 0.5);
+        const quantity = Math.random() * 5 + 0.5;
         mockAsks.push({
           price,
           quantity,
@@ -38,8 +98,8 @@ export default function OrderBook({ symbol }: OrderBookProps) {
       // Generate bids (buy orders) - lower prices
       const mockBids: OrderBookLevel[] = [];
       for (let i = 0; i < 10; i++) {
-        const price = basePrice - spread - (i * 25);
-        const quantity = Math.random() * 2 + 0.1;
+        const price = basePrice - spread/2 - (i * spread * 0.5);
+        const quantity = Math.random() * 5 + 0.5;
         mockBids.push({
           price,
           quantity,
@@ -52,10 +112,10 @@ export default function OrderBook({ symbol }: OrderBookProps) {
       setLoading(false);
     };
 
-    generateMockOrderBook();
+    generateRealisticOrderBook();
 
     // Update every few seconds
-    const interval = setInterval(generateMockOrderBook, 3000);
+    const interval = setInterval(generateRealisticOrderBook, 3000);
 
     return () => clearInterval(interval);
   }, [symbol]);

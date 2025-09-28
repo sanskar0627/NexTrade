@@ -8,6 +8,7 @@ dist/
 # Environment files
 .env*
 !.env.sample
+.env.local
 
 # Database
 *.db

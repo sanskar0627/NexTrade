@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import PriceTicker from '@/components/trading/PriceTicker';
 import OrderForm from '@/components/trading/OrderForm';
 import OrderBook from '@/components/trading/OrderBook';
+import TradingChart from '@/components/trading/TradingChart';
 
 interface TradePageProps {
   params: { symbol: string };
@@ -80,27 +81,7 @@ export default async function TradePage({ params }: TradePageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
           {/* Chart Area - Takes most space */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Price Chart</h2>
-                <div className="flex space-x-2 text-sm">
-                  <button className="px-3 py-1 bg-blue-100 text-blue-700 rounded">1D</button>
-                  <button className="px-3 py-1 text-gray-500 hover:bg-gray-100 rounded">7D</button>
-                  <button className="px-3 py-1 text-gray-500 hover:bg-gray-100 rounded">30D</button>
-                </div>
-              </div>
-              
-              {/* Placeholder for TradingView chart */}
-              <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <div className="text-4xl mb-4">📈</div>
-                  <p className="text-gray-600">TradingView Chart</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Live candlestick chart will appear here
-                  </p>
-                </div>
-              </div>
-            </div>
+            <TradingChart symbol={asset.symbol} height={500} />
           </div>
 
           {/* Trading Panel */}
