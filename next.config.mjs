@@ -2,7 +2,8 @@
 const nextConfig = {
   // Performance optimizations
   experimental: {
-    optimizeCss: true,
+    // Disabled for Docker compatibility
+    // optimizeCss: true,
     optimizePackageImports: ['lucide-react'],
   },
   

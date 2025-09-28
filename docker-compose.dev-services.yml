@@ -1,0 +1,54 @@
+version: '3.8'
+
+# Lightweight Docker setup - just database services
+# Run Next.js locally for faster development
+
+services:
+  # Redis for caching
+  redis:
+    image: redis:7-alpine
+    container_name: nextrade-redis
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: nextrade-postgres
+    environment:
+      POSTGRES_DB: nextrade
+      POSTGRES_USER: nextrade_user
+      POSTGRES_PASSWORD: nextrade_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis Commander - Web UI for Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    depends_on:
+      - redis
+
+  # Adminer - Web UI for PostgreSQL
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+  redis_data:

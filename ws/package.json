@@ -1,0 +1,17 @@
+{
+  "name": "nextrade-websocket",
+  "version": "1.0.0",
+  "description": "WebSocket service for NexTrade real-time data",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0",
+    "ioredis": "^5.8.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
